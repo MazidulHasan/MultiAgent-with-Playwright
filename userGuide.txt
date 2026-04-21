@@ -1,0 +1,83 @@
+# Swag Labs (SauceDemo) Technical User Guide
+
+## 1. Overview
+Swag Labs is a React-based e-commerce simulation designed to facilitate software testing. It provides a standardized environment for verifying login logic, inventory management, and checkout workflows.
+
+---
+
+## 2. Access and Environment Setup
+* **Web URL:** `https://www.saucedemo.com/`
+* **Local Host:** `http://localhost:3000/` (following `npm start` in the cloned repository)
+* **Application Type:** Single Page Application (SPA)
+
+---
+
+## 3. Authentication System
+The application uses a specific set of credentials to trigger different application states.
+
+**Global Password:** `secret_sauce`
+
+| Username | Application State / Scenario |
+| :--- | :--- |
+| `standard_user` | Functional baseline; no intentional errors. |
+| `locked_out_user` | Triggers a lockout error message upon login attempt. |
+| `problem_user` | Replaces product images with "dog" images and breaks certain UI flows. |
+| `performance_glitch_user` | Introduces a 5-second delay on the inventory page load. |
+| `error_user` | Causes specific buttons (like 'Add to Cart') to fail or throw errors. |
+| `visual_user` | Introduces visual regressions (e.g., misaligned elements). |
+
+---
+
+## 4. Core Functional Modules
+
+### 4.1 Login Page
+* **Components:** Username field, Password field, Login button.
+* **Logic:** Validates against the pre-defined user list. Invalid credentials trigger an error container with a "service" message.
+
+### 4.2 Product Inventory (`/inventory.html`)
+* **Product Cards:** Includes Title, Description, Image, and Price.
+* **Add/Remove Toggle:** The "Add to Cart" button dynamically changes to "Remove" once clicked.
+* **Sorting Menu:** Located at the top right. Options:
+    * Name (A to Z) / Name (Z to A)
+    * Price (low to high) / Price (high to low)
+* **Cart Badge:** A numerical indicator on the shopping cart icon updates in real-time as items are added or removed.
+
+### 4.3 Product Detail Page
+* Accessible by clicking either the product image or the product title.
+* Contains full product description and the ability to add/remove the item from the cart.
+
+### 4.4 Shopping Cart (`/cart.html`)
+* Displays a list of all selected items.
+* **Functionality:** Users can remove items directly from the list or click "Continue Shopping" to return to the inventory.
+* **Checkout:** Initiates the final transaction workflow.
+
+### 4.5 Checkout Workflow
+1.  **Step 1: Information (`/checkout-step-one.html`):** Requires First Name, Last Name, and Postal Code. Fields are mandatory.
+2.  **Step 2: Overview (`/checkout-step-two.html`):** Displays item total, tax calculation (8%), and final total.
+3.  **Step 3: Complete (`/checkout-complete.html`):** Displays a "Thank You" message and a "Back Home" button.
+
+---
+
+## 5. UI Elements & Navigation
+* **Side Menu (Burger Menu):**
+    * **All Items:** Redirects to the inventory.
+    * **About:** Redirects to the Sauce Labs corporate site.
+    * **Logout:** Ends the session and returns the user to the login screen.
+    * **Reset App State:** Clears the cart and restores original inventory state without logging out.
+* **Footer:** Contains social media icons (Twitter, Facebook, LinkedIn) and copyright information.
+
+---
+
+## 6. Technical Specifications for Automation
+The application is optimized for Selenium, Playwright, and Cypress.
+
+* **Test Attributes:** Most interactive elements contain a `data-test` attribute (e.g., `data-test="login-button"`, `data-test="add-to-cart-sauce-labs-backpack"`).
+* **State Management:** The application uses browser storage to track items in the cart. "Reset App State" programmatically clears this storage.
+* **Error Handling:** Errors are displayed in a `div` with the class `.error-message-container`.
+
+---
+
+## 7. Known Issues (Intentional for Testing)
+* **Problem User:** The "Remove" button on the inventory page may not function for certain items.
+* **Performance Glitch:** The inventory page will hang for exactly 5000ms before rendering.
+* **Checkout:** If specific required fields are left blank in Step 1, an "Error: [Field] is required" message appears.
