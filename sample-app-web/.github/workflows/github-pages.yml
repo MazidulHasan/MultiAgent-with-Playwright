@@ -1,0 +1,46 @@
+name: github pages release
+
+on:
+  push:
+    branches:
+      - main
+#     paths:
+#       - '.storybook'
+#       - 'public'
+#       - 'src'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Build
+        uses: actions/setup-node@v2
+        with:
+          node-version: '22.x'
+
+      - name: Build site
+        env:
+          CI: false
+        run: |
+          ls
+          npm ci
+          npm run build
+
+      - name: Build storybook
+        env:
+          CI: false
+        run: |
+          ls
+          npm run build.storybook
+
+      - name: Deploy
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./build
+          cname: www.saucedemo.com
