@@ -1,0 +1,39 @@
+"""Test: {{ workflow_name }} (auto-generated)."""
+from __future__ import annotations
+
+import pytest
+from playwright.sync_api import Page, expect
+
+{% for imp in imports %}
+from pages.{{ imp.module }} import {{ imp.class_name }}
+{% endfor %}
+
+
+@pytest.mark.regression
+def {{ test_func_name }}(page: Page, base_url: str, credentials: dict):
+    """{{ workflow_name }}"""
+{% for imp in imports %}
+    {{ imp.attr_name }} = {{ imp.class_name }}(page)
+{% endfor %}
+
+{% for step in steps %}
+    # {{ step.description | default("step") }}
+{% if step.action == "navigate" %}
+    page.goto(base_url + "{{ step.target }}")
+{% elif step.action == "fill" %}
+    {{ step.page_attr }}.fill_{{ step.target }}({{ step.value | tojson }})
+{% elif step.action == "click" %}
+    {{ step.page_attr }}.click_{{ step.target }}()
+{% elif step.action == "assert_url" %}
+    expect(page).to_have_url(lambda u: "{{ step.value }}" in u)
+{% elif step.action == "assert_visible" %}
+    expect({{ step.page_attr }}.{{ step.target }}).to_be_visible()
+{% elif step.action == "assert_text" %}
+    expect({{ step.page_attr }}.{{ step.target }}).to_contain_text({{ step.value | tojson }})
+{% elif step.action == "wait" %}
+    page.wait_for_load_state("networkidle")
+{% else %}
+    # Unknown action: {{ step.action }}
+    pass
+{% endif %}
+{% endfor %}

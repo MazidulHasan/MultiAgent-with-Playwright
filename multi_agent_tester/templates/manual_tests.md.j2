@@ -1,0 +1,24 @@
+# Regression Test Suite — Manual Test Cases
+
+_Total cases: {{ cases | length }}_
+
+{% for c in cases %}
+---
+
+## {{ c.id }} — {{ c.title }}
+
+- **Priority:** {{ c.priority | default("P2") }}
+- **Type:** {{ c.type | default("Functional") }}
+- **Preconditions:** {{ c.preconditions | default("None") }}
+
+### Steps
+
+{% for step in c.steps %}
+{{ loop.index }}. {{ step }}
+{% endfor %}
+
+### Expected Result
+
+{{ c.expected }}
+
+{% endfor %}

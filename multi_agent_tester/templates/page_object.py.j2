@@ -1,0 +1,28 @@
+"""Page object for the {{ page_name }} page (auto-generated)."""
+from __future__ import annotations
+
+from playwright.sync_api import Page
+from .base_page import BasePage
+
+
+class {{ class_name }}(BasePage):
+    def __init__(self, page: Page):
+        super().__init__(page)
+
+    # ---- locators ----
+{% for el in elements %}
+    @property
+    def {{ el.name }}(self):
+        return {{ el.locator_expression | replace("page.", "self.page.") }}
+{% endfor %}
+
+    # ---- actions ----
+{% for el in elements %}
+{% if el.type in ('input', 'textbox', 'email', 'password', 'search', 'tel', 'text', 'textarea') %}
+    def fill_{{ el.name }}(self, value: str) -> None:
+        self.{{ el.name }}.fill(value)
+{% elif el.type in ('button', 'link', 'submit') or el.tag in ('button', 'a') %}
+    def click_{{ el.name }}(self) -> None:
+        self.{{ el.name }}.click()
+{% endif %}
+{% endfor %}

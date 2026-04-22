@@ -1,0 +1,32 @@
+# Pin to 0.3.x — version 1.x removed AgentExecutor
+langchain>=0.3.0,<1.0.0
+langchain-core>=0.3.0,<1.0.0
+langchain-community>=0.3.0,<1.0.0
+
+# Groq provider only (add others when you have their API keys)
+langchain-groq>=0.2.0,<1.0.0
+
+# Browser automation
+playwright>=1.49.0
+pytest-playwright>=0.6.0
+
+# Test execution
+pytest>=8.0
+pytest-xdist>=3.0
+pytest-html>=4.0
+
+# Code / doc parsing
+astroid>=3.0
+beautifulsoup4>=4.12
+lxml>=5.0
+pypdf>=5.0
+markdown-it-py>=3.0
+
+# Templating, CLI, data
+jinja2>=3.1
+pydantic>=2.0,<3.0
+pydantic-settings>=2.0
+python-dotenv>=1.0
+typer>=0.9
+rich>=13.0
+openpyxl>=3.1

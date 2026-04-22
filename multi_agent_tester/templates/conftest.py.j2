@@ -1,0 +1,78 @@
+"""Pytest fixtures and hooks for the generated automation project."""
+from __future__ import annotations
+
+import os
+import sys
+from pathlib import Path
+
+import pytest
+from playwright.sync_api import Browser, BrowserContext, Page, sync_playwright
+
+# Make `pages.*` imports work when pytest is invoked from the automation dir.
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+_DEFAULT_CREDS = {{ credentials | tojson }}
+
+
+@pytest.fixture(scope="session")
+def base_url() -> str:
+    return os.getenv("APP_BASE_URL", "{{ base_url }}")
+
+
+@pytest.fixture(scope="session")
+def credentials() -> dict:
+    creds = dict(_DEFAULT_CREDS)
+    if os.getenv("APP_USERNAME"):
+        creds["username"] = os.getenv("APP_USERNAME")
+    if os.getenv("APP_PASSWORD"):
+        creds["password"] = os.getenv("APP_PASSWORD")
+    return creds
+
+
+@pytest.fixture(scope="session")
+def browser_type() -> str:
+    return os.getenv("BROWSER", "chromium")
+
+
+@pytest.fixture(scope="session")
+def browser(browser_type: str):
+    with sync_playwright() as pw:
+        launcher = getattr(pw, browser_type)
+        b = launcher.launch(headless=os.getenv("HEADLESS", "1") == "1")
+        yield b
+        b.close()
+
+
+@pytest.fixture()
+def context(browser: Browser) -> BrowserContext:
+    ctx = browser.new_context()
+    ctx.tracing.start(screenshots=True, snapshots=True, sources=True)
+    yield ctx
+    traces = Path("test_results") / "traces"
+    traces.mkdir(parents=True, exist_ok=True)
+    ctx.tracing.stop(path=str(traces / f"{id(ctx)}.zip"))
+    ctx.close()
+
+
+@pytest.fixture()
+def page(context: BrowserContext) -> Page:
+    p = context.new_page()
+    yield p
+    p.close()
+
+
+# ---- Hooks ----
+
+@pytest.hookimpl(hookwrapper=True)
+def pytest_runtest_makereport(item, call):
+    outcome = yield
+    rep = outcome.get_result()
+    if rep.when == "call" and rep.failed:
+        page = item.funcargs.get("page")
+        if page is not None:
+            shots = Path("test_results") / "screenshots"
+            shots.mkdir(parents=True, exist_ok=True)
+            try:
+                page.screenshot(path=str(shots / f"{item.name}.png"), full_page=True)
+            except Exception:
+                pass

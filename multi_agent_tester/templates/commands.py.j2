@@ -1,0 +1,40 @@
+"""Custom Playwright commands — retryable wrappers used across page objects."""
+from __future__ import annotations
+
+import time
+from typing import Iterable
+
+from playwright.sync_api import Locator, Page, TimeoutError as PWTimeoutError
+
+
+def safe_click(locator: Locator, retries: int = 3, delay_ms: int = 300) -> None:
+    """Click with visibility wait and bounded retry."""
+    last_err: Exception | None = None
+    for _ in range(retries):
+        try:
+            locator.wait_for(state="visible", timeout=5_000)
+            locator.click()
+            return
+        except (PWTimeoutError, Exception) as e:  # noqa: BLE001
+            last_err = e
+            time.sleep(delay_ms / 1000)
+    raise RuntimeError(f"safe_click failed after {retries} retries: {last_err}")
+
+
+def fill_form_safely(page: Page, fields: dict[str, str]) -> None:
+    """Fill a dict of {selector: value} with existence waits."""
+    for sel, val in fields.items():
+        page.wait_for_selector(sel, state="visible", timeout=5_000)
+        page.fill(sel, val)
+
+
+def first_visible(page: Page, selectors: Iterable[str]) -> Locator:
+    """Return the first locator that is actually visible. Useful for fallback locators."""
+    for sel in selectors:
+        loc = page.locator(sel).first
+        try:
+            loc.wait_for(state="visible", timeout=1_500)
+            return loc
+        except PWTimeoutError:
+            continue
+    raise RuntimeError(f"No visible element for any selector: {list(selectors)}")

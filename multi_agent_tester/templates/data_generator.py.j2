@@ -1,0 +1,17 @@
+"""Test-data utilities used by generated tests."""
+from __future__ import annotations
+
+import secrets
+from datetime import datetime
+
+
+def unique_email(prefix: str = "qa") -> str:
+    return f"{prefix}.{secrets.token_hex(4)}@example.com"
+
+
+def unique_string(prefix: str = "x", length: int = 6) -> str:
+    return f"{prefix}-{secrets.token_hex(length // 2 or 2)}"
+
+
+def today_iso() -> str:
+    return datetime.now().strftime("%Y-%m-%d")

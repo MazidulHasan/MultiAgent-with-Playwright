@@ -1,0 +1,22 @@
+"""Base class for all page objects."""
+from __future__ import annotations
+
+from playwright.sync_api import Page, expect
+
+
+class BasePage:
+    BASE_URL: str = "{{ base_url }}"
+
+    def __init__(self, page: Page):
+        self.page = page
+
+    def open(self, path: str = "") -> None:
+        """Navigate to BASE_URL + path."""
+        url = self.BASE_URL.rstrip("/") + ("/" + path.lstrip("/") if path else "")
+        self.page.goto(url, wait_until="domcontentloaded")
+
+    def expect_visible(self, locator) -> None:
+        expect(locator).to_be_visible()
+
+    def expect_url_contains(self, fragment: str) -> None:
+        expect(self.page).to_have_url(lambda u: fragment in u)
